@@ -13,6 +13,8 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "USART.h"
+#include "ADC.h"
 
 #ifndef F_CPU
 #define F_CPU ((uint32_t)16000000)

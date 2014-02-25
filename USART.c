@@ -1,7 +1,7 @@
 #include "USART.h"
 
-extern volatile uint8_t donnee;
-volatile uint8_t caractere;
+extern volatile uint8_t donneeRecue, numBuffer, numBufferEnvoi, debug;
+extern volatile uint8_t buffer[][TAILLE_BUFFER];
 
 void USART_Init()
 {
@@ -11,51 +11,60 @@ void USART_Init()
 	//- 8 bits de données - pas de parité
 	UCSRA = (0 << RXC) | (0 << TXC)	| (1 << UDRE) | (0 << FE) | (0 << DOR) | (0 << PE) | (0 << U2X)	| (0 << MPCM);
 	UCSRB = (1 << RXCIE) | (0 << TXCIE) | (0 << UDRIE) | (1 << RXEN)  |  (1 << TXEN) | (0 << UCSZ2)  | (0 << RXB8)	| (0 << TXB8);
-	
-	UCSRC =  (1 << URSEL) | (0 << UMSEL) | (0 << UPM1) | (0 << UPM0) | (0 << USBS) | (1 << UCSZ1) | (1 << UCSZ0) | (0 << UCPOL);
-	//UCSRC = 0x86;
-	DDRB=0xFF;
-	 
+	UCSRC = (1 << URSEL) | (0 << UMSEL) | (0 << UPM1) | (0 << UPM0) | (0 << USBS) | (1 << UCSZ1) | (1 << UCSZ0) | (0 << UCPOL);	 
+}
+
+//Intéruption pour la reception des trames de commandes
+ISR(USART_RXC_vect)
+{
+	donneeRecue=UDR;
+	PORTB^=0x80;
+	if (debug==0)
+	{
+		USART_Envoie(donneeRecue);
+	}
 }
 
 
-uint8_t USART_Recevoir(void)
+//Intéruption pour l'envoi des données via l'USART
+ISR(USART_UDRE_vect)
 {
-
-	while ( !(UCSRA & (1 << RXC)) ) // détermine si la réception est complètée
-		;
-
-	donnee = UDR; // réception complétée
-	
-	switch (donnee)
+	if (buffer[numBufferEnvoi][1]!=0)
 	{
-		case DEBUT_DEBUG:
-		case FIN_DEBUG:
-		{
-			break;
-		}
-		default:
-		{
-			USART_Transmettre(donnee);
-			break;
-		}
+		UDR=buffer[numBufferEnvoi][0];
+		buffer[numBufferEnvoi][1]=0;
+		numBufferEnvoi=(numBufferEnvoi+1)%(TAILLE_BUFFER);
+	}
+	else
+	{
+		UCSRB &= ~(1 << UDRIE); //Lorsqu'on à envoyé notre donnée dans l'UDR on désactive l'intéruption
 	}
 	
-	return donnee;
-
 }
 
-
-void USART_Transmettre(uint8_t caractere)
+//Système de buffer pour USART
+void USART_Envoie(uint8_t donneeEnvoi)
 {
+	PORTB=(PORTB & 0x80)|(~numBuffer);
+	buffer[numBuffer][0]=donneeEnvoi;
+	buffer[numBuffer][1]=1;
+	numBuffer=(numBuffer+1)%TAILLE_BUFFER;
+	UCSRB|=(1 << UDRIE);
+}
 
-	while ( !(UCSRA & (1 << UDRE)) )										
-		;
-	UDR = caractere;
-
+//Fonction pour envoyer une donnée(1octet) dans la console
+//de commande de notre robot
+void USART_Debug(uint8_t donneeDebug)
+{
+	debug=1;
+	USART_Envoie(DEBUT_DEBUG);
+	USART_Envoie(donneeDebug);
+	USART_Envoie(FIN_DEBUG);
+	debug=0;
 }
 
 
+//Fonction de lecture des trames de commande
 void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 {
 	uint8_t etat = 1;
@@ -64,7 +73,7 @@ void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 
 		case 1:
 			{
-				if (donnee == 0xF1) // réception d'une commande normale
+				if (donneeRecue == 0xF1) // réception d'une commande normale
 				{
 					etat = 2;
 					break;
@@ -73,7 +82,7 @@ void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 
 		case 2:
 			{
-				*vitesse = donnee;
+				*vitesse = donneeRecue;
 				etat = 3;
 				break;
 			}
@@ -81,7 +90,7 @@ void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 		case 3:
 			{
 			
-				*angle = donnee;
+				*angle = donneeRecue;
 				etat = 0;
 				break;
 			}
@@ -89,23 +98,6 @@ void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 
 }
 
-ISR(USART_RXC_vect)
-{
-	donnee = UDR; // réception complétée
-	PORTB^=1;
-	switch (donnee)
-	{
-		case DEBUT_DEBUG:
-		case FIN_DEBUG:
-		{
-			break;
-		}
-		default:
-		{
-			UDR = donnee;
-			break;
-		}
-	} 	
 
 
-}
+

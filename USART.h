@@ -10,17 +10,15 @@
 #define F_CPU ((uint32_t)16000000)
 #define BAUD_RATE ((uint32_t)9600)
 #define UART_BAUD_SELECT (uint8_t)(F_CPU/(BAUD_RATE << 4) - 1)
-
-#define DEBUT_DEBUG 0xFE
-#define FIN_DEBUG	0xFF
+#define TAILLE_BUFFER 5
+#define DEBUT_DEBUG '#'
+#define FIN_DEBUG	'#'
 
 
 
 void USART_Init(void);
-
-
-uint8_t USART_Recevoir(void);
-void USART_Transmettre(uint8_t caractere);
+void USART_Envoie(uint8_t donneeEnvoi);
 void Lire_Trame(uint8_t *vitesse, uint8_t *angle);
+void USART_Debug(uint8_t donneeDebug);
 
 #endif 

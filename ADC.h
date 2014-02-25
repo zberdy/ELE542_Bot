@@ -31,7 +31,7 @@
 /* Fonctions */
 
 void ADC_Init(void);
-void moyenne_Moteur(uint16_t vitesseMoteur[], volatile uint16_t somme_vitesse_copie[], volatile uint8_t nombre_echantillon_copie[]);
+void moyenne_Moteur(uint16_t vitesseMoteurCopie[], volatile uint16_t somme_vitesse_copie[], volatile uint8_t nombre_echantillon_copie[]);
 
 //Variables externes
 

@@ -17,10 +17,9 @@
  */
 
 #include "pwm.h"
-#include "ADC.h"
 
 volatile uint16_t compteur1, compteurA, compteurB;
-extern uint16_t vMaxPlus[2], vZeroPlus[2], vMaxMoins[2], vZeroMoins[2];
+extern uint16_t vMaxPlus[], vZeroPlus[], vMaxMoins[], vZeroMoins[],aPlus[], bPlus[], aMoins[], bMoins[];
 volatile uint8_t  calibration_req;
 volatile uint8_t  calibration_rdy;
 extern volatile uint8_t nombre_echantillon[];
@@ -130,6 +129,20 @@ void PWM_calibrer(void)
 	while(nombre_echantillon[GAUCHE]<ECHANTILLON_INIT && nombre_echantillon[DROIT]<ECHANTILLON_INIT)
 	; //On attend que l'ADC est recolté assez d'échantillons
 	moyenne_Moteur(vZeroMoins, somme_vitesse, nombre_echantillon);
+
+	aPlus[GAUCHE]=(1023-0)/(vMaxPlus[GAUCHE]-vZeroPlus[GAUCHE]);
+	aPlus[DROIT]=(1023-0)/(vMaxPlus[DROIT]-vZeroPlus[DROIT]);
+	bPlus[GAUCHE]=-aPlus[GAUCHE]*vZeroPlus[GAUCHE];
+	bPlus[DROIT]=-aPlus[DROIT]*vZeroPlus[DROIT];
+
+	aMoins[GAUCHE]=(1023-0)/(vMaxMoins[GAUCHE]-vZeroMoins[GAUCHE]);
+	aMoins[DROIT]=(1023-0)/(vMaxMoins[DROIT]-vZeroMoins[DROIT]);
+	bMoins[GAUCHE]=-aMoins[GAUCHE]*vZeroMoins[GAUCHE];
+	bMoins[DROIT]=-aMoins[DROIT]*vZeroMoins[DROIT];
+
+
+	USART_Debug(0xFF);
+
 }
 
 

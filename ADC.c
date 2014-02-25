@@ -16,7 +16,7 @@ void ADC_Init(void)
 	//- Référence de voltage = AREF
 	//- Mode de traitement des acquisitions = Interruption
 	ADMUX	= (0 << REFS1) | (0 << REFS0) | (0 << ADLAR) | (0 << MUX4) | (0 << MUX3) | (0 << MUX2)	| (0 << MUX1) | (0 << MUX0);
-	ADCSRA	=  (1 << ADEN)	| (0 << ADSC)	| (0 << ADATE) | (0 << ADIF) |   (1 << ADIE) |  (1 << ADPS2)	|  (1 << ADPS1)	 |  (1 << ADPS0); 
+	ADCSRA	= (1 << ADEN) | (0 << ADSC) | (1 << ADATE) | (0 << ADIF) | (1 << ADIE) |  (1 << ADPS2)	|  (1 << ADPS1)	 |  (1 << ADPS0); 
 	SFIOR	= (0 << ADTS2) | (0 << ADTS1) | (0 << ADTS0) | (0 << 4)	   |  (0 << ACME) | (0 << PUD)	| (0 << PSR2)	 | (0 << PSR10);
 	ADCSRA |= (1 << ADSC); //On lance l'aquisition en mode free running
 	ADMUX  ^= (1 << MUX0); //On change immédiatement de canal pour la prochaine conversion
@@ -65,10 +65,11 @@ ISR(ADC_vect)
 
 void moyenne_Moteur(uint16_t vitesseMoteurCopie[], volatile uint16_t somme_vitesse_copie[], volatile uint8_t nombre_echantillon_copie[])
 {
-	vitesseMoteurCopie[DROIT]=somme_vitesse_copie[DROIT]/nombre_echantillon_copie[DROIT];
-	vitesseMoteurCopie[GAUCHE]=somme_vitesse_copie[GAUCHE]/nombre_echantillon_copie[GAUCHE];
 	nombre_echantillon[GAUCHE]=0; //Une fois l'opération de moyenne faite on réinitialise les données à 0
 	somme_vitesse[GAUCHE]=0;
 	nombre_echantillon[DROIT]=0;
 	somme_vitesse[DROIT]=0;
+	vitesseMoteurCopie[DROIT]=somme_vitesse_copie[DROIT]/nombre_echantillon_copie[DROIT];
+	vitesseMoteurCopie[GAUCHE]=somme_vitesse_copie[GAUCHE]/nombre_echantillon_copie[GAUCHE];
+	
 }
