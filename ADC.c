@@ -63,13 +63,12 @@ ISR(ADC_vect)
 	}
 }
 
-void moyenne_Moteur(uint16_t vitesseMoteurCopie[], volatile uint16_t somme_vitesse_copie[], volatile uint8_t nombre_echantillon_copie[])
+void moyenne_Moteur(uint16_t vitesseMoteur[], volatile uint16_t somme_vitesse_copie[], volatile uint8_t nombre_echantillon_copie[])
 {
 	nombre_echantillon[GAUCHE]=0; //Une fois l'opération de moyenne faite on réinitialise les données à 0
 	somme_vitesse[GAUCHE]=0;
 	nombre_echantillon[DROIT]=0;
 	somme_vitesse[DROIT]=0;
-	vitesseMoteurCopie[DROIT]=somme_vitesse_copie[DROIT]/nombre_echantillon_copie[DROIT];
-	vitesseMoteurCopie[GAUCHE]=somme_vitesse_copie[GAUCHE]/nombre_echantillon_copie[GAUCHE];
-	
+	vitesseMoteur[DROIT]=somme_vitesse_copie[DROIT]/nombre_echantillon_copie[DROIT];
+	vitesseMoteur[GAUCHE]=somme_vitesse_copie[GAUCHE]/nombre_echantillon_copie[GAUCHE];	
 }

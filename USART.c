@@ -18,7 +18,7 @@ void USART_Init()
 ISR(USART_RXC_vect)
 {
 	donneeRecue=UDR;
-	PORTB^=0x80;
+	//PORTB^=0x80;
 	if (debug==0)
 	{
 		USART_Envoie(donneeRecue);
@@ -45,7 +45,7 @@ ISR(USART_UDRE_vect)
 //Système de buffer pour USART
 void USART_Envoie(uint8_t donneeEnvoi)
 {
-	PORTB=(PORTB & 0x80)|(~numBuffer);
+	//PORTB=(PORTB & 0x80)|(~numBuffer);
 	buffer[numBuffer][0]=donneeEnvoi;
 	buffer[numBuffer][1]=1;
 	numBuffer=(numBuffer+1)%TAILLE_BUFFER;

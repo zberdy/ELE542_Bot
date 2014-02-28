@@ -17,11 +17,22 @@ volatile uint8_t donneeRecue, numBuffer=0, numBufferEnvoi=0;
 volatile uint8_t buffer [TAILLE_BUFFER][TAILLE_BUFFER]={{0}};
 uint8_t debug=0;
 
-volatile int8_t donnee=0, flag5ms=0;
+//Variable de Temps
+volatile int8_t flag5ms=0;
+
+//Variable de calcul de la vitesse des moteurs
 volatile uint16_t somme_vitesse[2] = {0, 0};
 volatile uint8_t nombre_echantillon[2] = {0, 0};
-uint16_t vMaxPlus[2]={0,0}, vZeroPlus[2]={0,0}, vMaxMoins[2]={0,0}, vZeroMoins[2]={0,0}, aPlus[2]={0,0}, bPlus[2]={0,0}, aMoins[2]={0,0}, bMoins[2]={0,0}, vitesseMoteur[2]={0,0};
+uint16_t vitesseMoteur[2]={0,0};
+
+//Variable de calibration des moteurs
+uint16_t vMaxPlus[2]={0,0}, vZeroPlus[2]={0,0}, vMaxMoins[2]={0,0}, vZeroMoins[2]={0,0}, aPlus[2]={0,0}, bPlus[2]={0,0}, aMoins[2]={0,0}, bMoins[2]={0,0};
+
+//Variable de commande du Robot
 uint8_t vitesseCommande=0, angleCommande=0;
+
+//Variable de Test à suprimmer
+uint8_t test1=0;
 
 int main(void)
 {
@@ -35,13 +46,23 @@ int main(void)
 	PWM_Init();
 	USART_Debug('3');
 	PWM_calibrer();
-	USART_Debug('4');
+	//USART_Debug('4');
 	//USART_Transmettre(DEBUT_DEBUG);
 	flag5ms=0;
 
 	while(1)
     {
-	
+		if (flag5ms==1)
+		{
+			test1++;
+			if (test1>100)
+			{
+				test1=0;
+				PORTB^=0b10000000;
+			}
+			flag5ms=0;			
+		}
+	/*
 	//Reception de la commande
 	Lire_Trame(&vitesseCommande, &angleCommande);
 	
@@ -67,6 +88,6 @@ int main(void)
 			{
 				vitesseMoteur[DROIT]=vitesseMoteur[DROIT]*aPlus[DROIT]+bPlus[DROIT];
 			}
-	    }
+	    } */
 	}
 }
