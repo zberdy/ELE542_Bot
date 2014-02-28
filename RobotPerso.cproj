@@ -128,6 +128,12 @@
     <Compile Include="ADC.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="moteur.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="moteur.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="pwm.c">
       <SubType>compile</SubType>
     </Compile>

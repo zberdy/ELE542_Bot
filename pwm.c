@@ -19,12 +19,20 @@
 #include "pwm.h"
 
 volatile uint16_t compteur1, compteurA, compteurB;
-extern uint16_t vMaxPlus[], vZeroPlus[], vMaxMoins[], vZeroMoins[],aPlus[], bPlus[], aMoins[], bMoins[];
+
+//Variables de calibration des moteurs
+extern uint16_t vMaxPlus[], vZeroPlus[], vMaxMoins[], vZeroMoins[];
+extern float aPlus[], bPlus[], aMoins[], bMoins[];
+
+//Variables de temps
 volatile uint8_t  calibration_req;
 volatile uint8_t  calibration_rdy;
+extern volatile uint8_t flag5ms;
+
+//Variables de stockage pour la vitesse des moteurs durant l'intéruption de l'ADC 
 extern volatile uint8_t nombre_echantillon[];
 extern volatile uint16_t somme_vitesse[];
-extern volatile uint8_t flag5ms;
+
 
 void PWM_Init(void) {
 	
@@ -133,15 +141,15 @@ void PWM_calibrer(void)
 	PORTB^=0b00001000;
 	
 	//Une fois tous nos échantillons récupérés, on calcul les termes des fonctions de correction (y=a.x+b)
-	aPlus[GAUCHE]=(1023)/(vMaxPlus[GAUCHE]-vZeroPlus[GAUCHE]);
-	aPlus[DROIT]=(1023)/(vMaxPlus[DROIT]-vZeroPlus[DROIT]);
-	bPlus[GAUCHE]=-aPlus[GAUCHE]*vZeroPlus[GAUCHE];
-	bPlus[DROIT]=-aPlus[DROIT]*vZeroPlus[DROIT];
+	aPlus[GAUCHE] = (float)(((1023) / (vMaxPlus[GAUCHE] - vZeroPlus[GAUCHE]))/1024);
+	aPlus[DROIT]  = (float)(((1023) / (vMaxPlus[DROIT] - vZeroPlus[DROIT]))/1024);
+	bPlus[GAUCHE] = (float)(-aPlus[GAUCHE]*vZeroPlus[GAUCHE]/1024); //On divise ici le coef b par 1024 afin d'éviter une division de float
+	bPlus[DROIT]  = (float)(-aPlus[DROIT]*vZeroPlus[DROIT]/1024); //
 
-	aMoins[GAUCHE]=(1023)/(vMaxMoins[GAUCHE]-vZeroMoins[GAUCHE]);
-	aMoins[DROIT]=(1023)/(vMaxMoins[DROIT]-vZeroMoins[DROIT]);
-	bMoins[GAUCHE]=-aMoins[GAUCHE]*vZeroMoins[GAUCHE];
-	bMoins[DROIT]=-aMoins[DROIT]*vZeroMoins[DROIT];
+	aMoins[GAUCHE]= (float)(((1023)/(vMaxMoins[GAUCHE]-vZeroMoins[GAUCHE]))/1024);
+	aMoins[DROIT] = (float)(((1023)/(vMaxMoins[DROIT]-vZeroMoins[DROIT]))/1024);
+	bMoins[GAUCHE]= (float)(-aMoins[GAUCHE]*vZeroMoins[GAUCHE]/1024);
+	bMoins[DROIT] = (float)(-aMoins[DROIT]*vZeroMoins[DROIT]/1024);
 
 }
 

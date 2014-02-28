@@ -13,12 +13,13 @@
 #define TAILLE_BUFFER 5
 #define DEBUT_DEBUG '#'
 #define FIN_DEBUG	'#'
+#define CST_ROT     0.03490658504 //=2.pi/180
 
 
 
 void USART_Init(void);
 void USART_Envoie(uint8_t donneeEnvoi);
-void Lire_Trame(uint8_t *vitesse, uint8_t *angle);
+void Lire_Trame(float *vitesse, float *angle);
 void USART_Debug(uint8_t donneeDebug);
 
 #endif 

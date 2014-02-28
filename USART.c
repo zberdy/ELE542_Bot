@@ -65,7 +65,7 @@ void USART_Debug(uint8_t donneeDebug)
 
 
 //Fonction de lecture des trames de commande
-void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
+void Lire_Trame(float *vitesse, float *angle)
 {
 	uint8_t etat = 1;
 	switch (etat)
@@ -82,7 +82,7 @@ void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 
 		case 2:
 			{
-				*vitesse = donneeRecue;
+				*vitesse = ((float)donneeRecue-100)*0.01;
 				etat = 3;
 				break;
 			}
@@ -90,7 +90,7 @@ void Lire_Trame(uint8_t *vitesse, uint8_t *angle)
 		case 3:
 			{
 			
-				*angle = donneeRecue;
+				*angle = (float)donneeRecue*CST_ROT;
 				etat = 0;
 				break;
 			}
