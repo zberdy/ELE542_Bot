@@ -5,18 +5,19 @@
  *  Author: KOLY-453
  */ 
 
-
+#include "USART.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "USART.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <util/delay.h>
 #include "pwm.h"
 #include "ADC.h"
 #include "moteur.h"
 
 //Variable global pour USART
-volatile uint8_t donneeRecue, numBuffer=0, numBufferEnvoi=0;
-volatile uint8_t buffer [TAILLE_BUFFER][TAILLE_BUFFER]={{0}};
-uint8_t debug=0;
+volatile uint8_t debug=0;
+char debugChaine[TAILLE_CHAINE];
 
 //Variable de Temps
 volatile int8_t flag5ms=0;
@@ -44,18 +45,20 @@ int main(void)
 	USART_Init();
 	DDRB=0xFF;
 	PORTB=0x00;
-	//USART_Debug('1');
 	ADC_Init();
-	//USART_Debug('2');
 	PWM_Init();
-	USART_Debug('3');
 	PWM_calibrer();
-	//USART_Debug('4');
-	//USART_Transmettre(DEBUT_DEBUG);
 	flag5ms=0;
 
 	while(1)
     {
+		//Succession de commande pour l'envoit d'une trame de Debug
+		_delay_ms(5000);
+		sprintf(debugChaine, "Hello  World");
+		debug=1;
+		UCSRB|=(1<<UDRIE);
+		PORTB^=1;
+		/*
 		//Reception de la commande
 		Lire_Trame(&vitesseCommande, &angleCommande);
 		
@@ -125,6 +128,7 @@ int main(void)
 		
 		//Calcul du duty cycle 
 		CalculPWM(vitesseCommande, angleCommande, vitesseMoteurCorr[GAUCHE], vitesseMoteurCorr[DROIT], &dutyCycle[GAUCHE], &dutyCycle[DROIT]);
-		
+	*/	
 	}
+
 }

@@ -1,7 +1,8 @@
 #include "USART.h"
 
-extern volatile uint8_t donneeRecue, numBuffer, numBufferEnvoi, debug;
-extern volatile uint8_t buffer[][TAILLE_BUFFER];
+extern volatile uint8_t debug;
+extern char debugChaine[TAILLE_CHAINE];
+volatile uint8_t compteur=TAILLE_CHAINE, donneRecue;
 
 void USART_Init()
 {
@@ -17,11 +18,12 @@ void USART_Init()
 //Intéruption pour la reception des trames de commandes
 ISR(USART_RXC_vect)
 {
-	donneeRecue=UDR;
-	//PORTB^=0x80;
+	donneRecue=UDR;
+	//PORTB^=0x01;
 	if (debug==0)
 	{
-		USART_Envoie(donneeRecue);
+		//USART_Envoie(donneRecue);
+		UCSRB|=(1<<UDRIE);
 	}
 }
 
@@ -29,39 +31,38 @@ ISR(USART_RXC_vect)
 //Intéruption pour l'envoi des données via l'USART
 ISR(USART_UDRE_vect)
 {
-	if (buffer[numBufferEnvoi][1]!=0)
+	if (debug==1)
 	{
-		UDR=buffer[numBufferEnvoi][0];
-		buffer[numBufferEnvoi][1]=0;
-		numBufferEnvoi=(numBufferEnvoi+1)%(TAILLE_BUFFER);
+		if (compteur==TAILLE_CHAINE)
+		{
+			UDR=DEBUT_DEBUG;
+			compteur=0;
+		}
+		else
+		{
+			if (debugChaine[compteur]!='\0')
+			{
+				UDR=debugChaine[compteur];
+				compteur++;
+			}
+			else
+			{
+				UDR=FIN_DEBUG;
+				UCSRB &= ~(1 << UDRIE);
+				compteur=TAILLE_CHAINE;
+				debug=0;
+			}
+		}
+		
 	}
 	else
 	{
-		UCSRB &= ~(1 << UDRIE); //Lorsqu'on à envoyé notre donnée dans l'UDR on désactive l'intéruption
+		UDR=donneRecue;
+		UCSRB &= ~(1 << UDRIE);
 	}
 	
 }
 
-//Système de buffer pour USART
-void USART_Envoie(uint8_t donneeEnvoi)
-{
-	//PORTB=(PORTB & 0x80)|(~numBuffer);
-	buffer[numBuffer][0]=donneeEnvoi;
-	buffer[numBuffer][1]=1;
-	numBuffer=(numBuffer+1)%TAILLE_BUFFER;
-	UCSRB|=(1 << UDRIE);
-}
-
-//Fonction pour envoyer une donnée(1octet) dans la console
-//de commande de notre robot
-void USART_Debug(uint8_t donneeDebug)
-{
-	debug=1;
-	USART_Envoie(DEBUT_DEBUG);
-	USART_Envoie(donneeDebug);
-	USART_Envoie(FIN_DEBUG);
-	debug=0;
-}
 
 
 //Fonction de lecture des trames de commande
@@ -73,7 +74,7 @@ void Lire_Trame(float *vitesse, float *angle)
 
 		case 1:
 			{
-				if (donneeRecue == 0xF1) // réception d'une commande normale
+				if (donneRecue == 0xF1) // réception d'une commande normale
 				{
 					etat = 2;
 					break;
@@ -82,7 +83,7 @@ void Lire_Trame(float *vitesse, float *angle)
 
 		case 2:
 			{
-				*vitesse = ((float)donneeRecue-100)*0.01;
+				*vitesse = ((float)donneRecue-100)*0.01;
 				etat = 3;
 				break;
 			}
@@ -90,7 +91,7 @@ void Lire_Trame(float *vitesse, float *angle)
 		case 3:
 			{
 			
-				*angle = (float)donneeRecue*CST_ROT;
+				*angle = (float)donneRecue*CST_ROT;
 				etat = 0;
 				break;
 			}
